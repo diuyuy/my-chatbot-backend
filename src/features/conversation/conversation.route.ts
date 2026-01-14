@@ -28,9 +28,7 @@ conversationRoute.post(
     const { message } = c.req.valid("json");
     const db = c.get("db");
 
-    console.log("DB Type: ", typeof db);
-
-    const conversationId = await createConversation(user.id, message);
+    const conversationId = await createConversation(db, user.id, message);
 
     return c.json(
       createSuccessResponse(RESPONSE_STATUS.CONVERSATION_CREATED, {
@@ -48,7 +46,10 @@ conversationRoute.patch(
   conversationGuard,
   async (c) => {
     const { conversationId } = c.req.valid("param");
-    await updateConversationTitle(+conversationId, "ds");
+    const { title } = c.req.valid("json");
+    const db = c.get("db");
+
+    await updateConversationTitle(db, conversationId, title);
 
     return c.json(createSuccessResponse(RESPONSE_STATUS.OK, null), 200);
   }

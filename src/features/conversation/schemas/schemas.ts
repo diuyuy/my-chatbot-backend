@@ -1,7 +1,7 @@
 import { z } from "@hono/zod-openapi";
 
 export const ConversationParamSchema = z.object({
-  conversationId: z.string().nonempty(),
+  conversationId: z.coerce.number(),
 });
 
 export const CreateConversationSchema = z.object({

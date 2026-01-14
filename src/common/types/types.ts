@@ -5,9 +5,11 @@ export interface Env {
   Bindings: {};
   Variables: {
     user: { id: number };
-    db: NodePgDatabase;
+    db: DBType;
   };
 }
+
+export type DBType = NodePgDatabase;
 
 export interface ResponseStatus {
   status: ContentfulStatusCode;

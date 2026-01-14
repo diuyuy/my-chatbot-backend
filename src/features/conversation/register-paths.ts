@@ -88,5 +88,10 @@ export const registerConversationPaths = (
       404: createErrorResponseSignature(RESPONSE_STATUS.CONVERSATION_NOT_FOUND),
       500: createErrorResponseSignature(RESPONSE_STATUS.INTERNAL_SERVER_ERROR),
     },
+    security: [
+      {
+        Bearer: [],
+      },
+    ],
   });
 };

@@ -1,10 +1,14 @@
 import { eq } from "drizzle-orm";
 import { RESPONSE_STATUS } from "../../../common/constants/response-status";
-import { db } from "../../../common/db/db";
 import { conversations } from "../../../common/db/schema/schema";
 import { CommonHttpException } from "../../../common/error/common-http-exception";
+import type { DBType } from "../../../common/types/types";
 
-export const createConversation = async (userId: number, message: string) => {
+export const createConversation = async (
+  db: DBType,
+  userId: number,
+  message: string
+) => {
   const title = generateTitle(message);
 
   const [newConversation] = await db
@@ -20,6 +24,7 @@ export const createConversation = async (userId: number, message: string) => {
 };
 
 export const updateConversationTitle = async (
+  db: DBType,
   conversationId: number,
   title: string
 ) => {
