@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import type { HTTPException } from "hono/http-exception";
+import { HTTPException } from "hono/http-exception";
 import { RESPONSE_STATUS } from "../constants/response-status";
 import { CommonHttpException } from "./common-http-exception";
 
@@ -20,6 +20,20 @@ export const globalExceptionHandler = (
   }
 
   console.error(error);
+
+  if (error instanceof HTTPException) {
+    if (error.status === 401) {
+      return c.json(
+        {
+          success: false,
+          code: RESPONSE_STATUS.INVALID_SESSION.code,
+          message: RESPONSE_STATUS.INVALID_SESSION.message,
+        },
+        error.status
+      );
+    }
+    return error.getResponse();
+  }
 
   return c.json(
     {

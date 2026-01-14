@@ -1,11 +1,11 @@
-import type { Session, User } from "better-auth";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 export interface Env {
   Bindings: {};
   Variables: {
-    user: User;
-    session: Session;
+    user: { id: number };
+    db: NodePgDatabase;
   };
 }
 

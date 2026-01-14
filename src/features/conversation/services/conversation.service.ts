@@ -4,7 +4,7 @@ import { db } from "../../../common/db/db";
 import { conversations } from "../../../common/db/schema/schema";
 import { CommonHttpException } from "../../../common/error/common-http-exception";
 
-export const createConversation = async (userId: string, message: string) => {
+export const createConversation = async (userId: number, message: string) => {
   const title = generateTitle(message);
 
   const [newConversation] = await db

@@ -6,6 +6,7 @@ import { validateAccessibility } from "./validate-conversation-accessability";
 
 export const conversationGuard = createMiddleware<Env>(async (c, next) => {
   const conversationId = c.req.param("conversationId");
+  console.log("🚀 ~ conversationId:", conversationId);
 
   if (!conversationId) {
     throw new CommonHttpException(RESPONSE_STATUS.INVALID_REQUEST_FORMAT);

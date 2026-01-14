@@ -1,4 +1,5 @@
 # deps
 node_modules/
 .env*
+*.http
 # .claude_context

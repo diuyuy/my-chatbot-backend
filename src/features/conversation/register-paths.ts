@@ -5,6 +5,7 @@ import { SuccessReponseSchema } from "../../common/schemas/common.schema";
 import type { Env } from "../../common/types/types";
 import { createErrorResponseSignature } from "../../common/utils/response-utils";
 import {
+  ConversationParamSchema,
   CreateConversationSchema,
   UpdateConversationSchema,
 } from "./schemas/schemas";
@@ -12,6 +13,15 @@ import {
 export const registerConversationPaths = (
   conversationRoute: OpenAPIHono<Env>
 ) => {
+  conversationRoute.openAPIRegistry.registerComponent(
+    "securitySchemes",
+    "Bearer",
+    {
+      type: "http",
+      scheme: "bearer",
+    }
+  );
+
   conversationRoute.openAPIRegistry.registerPath({
     path: "/",
     method: "post",
@@ -40,12 +50,18 @@ export const registerConversationPaths = (
       400: createErrorResponseSignature(RESPONSE_STATUS.INVALID_REQUEST_FORMAT),
       500: createErrorResponseSignature(RESPONSE_STATUS.INTERNAL_SERVER_ERROR),
     },
+    security: [
+      {
+        Bearer: [],
+      },
+    ],
   });
 
   conversationRoute.openAPIRegistry.registerPath({
     path: "/:conversationId",
     method: "patch",
     request: {
+      params: ConversationParamSchema,
       body: {
         content: {
           "application/json": {

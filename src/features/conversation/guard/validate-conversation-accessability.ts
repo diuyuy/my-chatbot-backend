@@ -5,7 +5,7 @@ import { conversations } from "../../../common/db/schema/schema";
 import { CommonHttpException } from "../../../common/error/common-http-exception";
 
 export const validateAccessibility = async (
-  userId: string,
+  userId: number,
   conversationId: number
 ) => {
   const [result] = await db

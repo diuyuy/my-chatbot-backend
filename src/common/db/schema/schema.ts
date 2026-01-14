@@ -10,16 +10,21 @@ import {
   vector,
 } from "drizzle-orm/pg-core";
 import type { MyUIMessage } from "../../../features/ai/types/types";
-import { user } from "./auth-schema";
 import { messageRoleEnum, resourceTypeEnum } from "./enums";
+
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  apiKey: text("apk_key").notNull().unique(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
 
 export const conversations = pgTable(
   "conversations",
   {
     id: serial("id").primaryKey(),
-    userId: text("user_id")
+    userId: integer("user_id")
       .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+      .references(() => users.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
@@ -40,9 +45,9 @@ export const favoriteConversations = pgTable(
   "favorite_conversations",
   {
     id: serial("id").primaryKey(),
-    userId: text("user_id")
+    userId: integer("user_id")
       .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+      .references(() => users.id, { onDelete: "cascade" }),
     conversationId: integer("conversation_id").references(
       () => conversations.id,
       {
@@ -76,9 +81,9 @@ export const documentResources = pgTable(
   "document_resources",
   {
     id: serial("id").primaryKey(),
-    userId: text("user_id")
+    userId: integer("user_id")
       .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+      .references(() => users.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     fileType: resourceTypeEnum("file_type").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -90,9 +95,9 @@ export const documentChunks = pgTable(
   "document_chunks",
   {
     id: serial("id").primaryKey(),
-    userId: text("user_id")
+    userId: integer("user_id")
       .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+      .references(() => users.id, { onDelete: "cascade" }),
     resourceId: integer("resource_id")
       .notNull()
       .references(() => documentResources.id, { onDelete: "cascade" }),

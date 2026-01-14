@@ -1,17 +1,23 @@
+import { eq } from "drizzle-orm";
+import { bearerAuth } from "hono/bearer-auth";
 import { createMiddleware } from "hono/factory";
-import { auth } from "../../features/auth/auth";
-import { RESPONSE_STATUS } from "../constants/response-status";
-import { CommonHttpException } from "../error/common-http-exception";
+import { db } from "../db/db";
+import { users } from "../db/schema/schema";
 import type { Env } from "../types/types";
 
+const bearer = bearerAuth({
+  verifyToken: async (token, c) => {
+    const [user] = await db.select().from(users).where(eq(users.apiKey, token));
+
+    if (!user) {
+      return false;
+    }
+
+    c.set("user", user);
+    return true;
+  },
+});
+
 export const sessionMiddleware = createMiddleware<Env>(async (c, next) => {
-  const sessionData = await auth.api.getSession();
-  if (!sessionData) {
-    throw new CommonHttpException(RESPONSE_STATUS.INVALID_SESSION);
-  }
-
-  c.set("session", sessionData.session);
-  c.set("user", sessionData.user);
-
-  await next();
+  return bearer(c, next);
 });
