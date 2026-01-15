@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm";
 import { RESPONSE_STATUS } from "../../../common/constants/response-status";
-import { db } from "../../../common/db/db";
 import { conversations } from "../../../common/db/schema/schema";
 import { CommonHttpException } from "../../../common/error/common-http-exception";
+import type { DBType } from "../../../common/types/types";
 
 export const validateAccessibility = async (
+  db: DBType,
   userId: number,
   conversationId: number
 ) => {

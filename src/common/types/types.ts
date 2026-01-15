@@ -18,6 +18,12 @@ export interface ResponseStatus {
   description: string;
 }
 
+export interface PaginationInfo {
+  cursor?: string;
+  limit: number;
+  direction: "asc" | "desc";
+}
+
 export interface PaginationOption {
   nextCursor: string | null;
   totalElements: number;

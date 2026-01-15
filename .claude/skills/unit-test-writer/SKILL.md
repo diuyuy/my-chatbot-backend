@@ -11,23 +11,22 @@ description: This is the guideline to follow when writing unit tests. Refer to t
 3. 각 함수마다 성공 케이스, 실패 케이스, 그리고 엣지 케이스들을 검증해주세요.
 4. `it()`에서 테스트에 대한 설명은 모두 영어로 작성해주세요.
 5. drizzle-orm의 `db` 인스턴스 모킹 필요 시 다음과 같이 mocking 해주세요.
+6. DB 호출 과정에서 발생한 error는 `globalExceptionHandler`에서 처리하기 때문에 고려할 필요 없습니다.
 
 ```ts
-vi.mock("../../common/db/db", () => ({
-  db: {
-    insert: vi.fn(),
-    update: vi.fn(),
-    select: vi.fn(),
-    delete: vi.fn(),
-  },
-}));
+const mockDB = {
+  insert: vi.fn(),
+  update: vi.fn(),
+  select: vi.fn(),
+  delete: vi.fn(),
+},
 
 // Examples
 const mockReturning = vi.fn().mockResolvedValue([mockConversation]);
 const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
-(db.insert as any).mockReturnValue({ values: mockValues });
-const conversationId = await createConversation(userId, message);
-expect(db.insert).toHaveBeenCalled();
+(mockDB.insert as any).mockReturnValue({ values: mockValues });
+const conversationId = await createConversation(mockDB, userId, message);
+expect(mockDB.insert).toHaveBeenCalled();
 /*Other test codes...*/
 ```
 각 테스트 전후로 mock을 초기화해주세요.
