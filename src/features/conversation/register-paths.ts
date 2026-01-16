@@ -4,8 +4,11 @@ import { RESPONSE_STATUS } from "../../common/constants/response-status";
 import { SuccessReponseSchema } from "../../common/schemas/common.schema";
 import type { Env } from "../../common/types/types";
 import { createErrorResponseSignature } from "../../common/utils/response-utils";
+import { createPaginationSchema } from "../../common/utils/schema-utils";
 import {
+  ConversationPaginationQuerySchema,
   ConversationParamSchema,
+  ConversationSchema,
   CreateConversationSchema,
   UpdateConversationSchema,
 } from "./schemas/schemas";
@@ -58,6 +61,33 @@ export const registerConversationPaths = (
   });
 
   conversationRoute.openAPIRegistry.registerPath({
+    path: "/",
+    method: "get",
+    request: {
+      query: ConversationPaginationQuerySchema,
+    },
+    responses: {
+      200: {
+        content: {
+          "application/json": {
+            schema: SuccessReponseSchema.extend({
+              data: createPaginationSchema(ConversationSchema),
+            }),
+          },
+        },
+        description: "요청 성공 응답",
+      },
+      400: createErrorResponseSignature(RESPONSE_STATUS.INVALID_REQUEST_FORMAT),
+      500: createErrorResponseSignature(RESPONSE_STATUS.INTERNAL_SERVER_ERROR),
+    },
+    security: [
+      {
+        Bearer: [],
+      },
+    ],
+  });
+
+  conversationRoute.openAPIRegistry.registerPath({
     path: "/:conversationId",
     method: "patch",
     request: {
@@ -87,6 +117,96 @@ export const registerConversationPaths = (
       ),
       404: createErrorResponseSignature(RESPONSE_STATUS.CONVERSATION_NOT_FOUND),
       500: createErrorResponseSignature(RESPONSE_STATUS.INTERNAL_SERVER_ERROR),
+    },
+    security: [
+      {
+        Bearer: [],
+      },
+    ],
+  });
+
+  conversationRoute.openAPIRegistry.registerPath({
+    path: "/:conversationId",
+    method: "delete",
+    request: {
+      params: ConversationParamSchema,
+    },
+    responses: {
+      200: {
+        content: {
+          "application/json": {
+            schema: SuccessReponseSchema.extend({
+              data: z.object({
+                conversationId: z.number(),
+              }),
+            }),
+          },
+        },
+        description: "요청 성공 응답",
+      },
+      400: createErrorResponseSignature(RESPONSE_STATUS.INVALID_REQUEST_FORMAT),
+      403: createErrorResponseSignature(
+        RESPONSE_STATUS.ACCESS_CONVERSATION_DENIED
+      ),
+      404: createErrorResponseSignature(RESPONSE_STATUS.CONVERSATION_NOT_FOUND),
+      500: createErrorResponseSignature(RESPONSE_STATUS.INTERNAL_SERVER_ERROR),
+    },
+    security: [
+      {
+        Bearer: [],
+      },
+    ],
+  });
+
+  // Favorite Conversation
+  conversationRoute.openAPIRegistry.registerPath({
+    path: "/:conversationId/favorites",
+    method: "post",
+    responses: {
+      201: {
+        content: {
+          "application/json": {
+            schema: SuccessReponseSchema.extend({
+              data: z.null(),
+            }),
+          },
+        },
+        description: "요청 성공 응답",
+      },
+    },
+  });
+
+  conversationRoute.openAPIRegistry.registerPath({
+    path: "/favorites",
+    method: "get",
+    responses: {
+      200: {
+        content: {
+          "application/json": {
+            schema: SuccessReponseSchema.extend({
+              data: z.array(ConversationSchema),
+            }),
+          },
+        },
+        description: "요청 성공 응답",
+      },
+    },
+  });
+
+  conversationRoute.openAPIRegistry.registerPath({
+    path: "/:conversationId/favorites",
+    method: "delete",
+    responses: {
+      200: {
+        content: {
+          "application/json": {
+            schema: SuccessReponseSchema.extend({
+              data: z.null(),
+            }),
+          },
+        },
+        description: "요청 성공 응답",
+      },
     },
   });
 };

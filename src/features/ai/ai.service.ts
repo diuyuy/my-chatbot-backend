@@ -113,7 +113,10 @@ export const generateEmbeddings = async (
     values: chunks,
   });
 
-  return embeddings.map((embedding, i) => ({ content: chunks[i], embedding }));
+  return embeddings.map((embedding, i) => ({
+    content: chunks[i] ?? "",
+    embedding,
+  }));
 };
 
 export const generateEmbedding = async (value: string) => {

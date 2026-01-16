@@ -1,10 +1,30 @@
-import { eq } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gte,
+  ilike,
+  isNull,
+  lte,
+} from "drizzle-orm";
 import { RESPONSE_STATUS } from "../../../common/constants/response-status";
-import { db } from "../../../common/db/db";
-import { conversations } from "../../../common/db/schema/schema";
+import {
+  conversations,
+  favoriteConversations,
+} from "../../../common/db/schema/schema";
 import { CommonHttpException } from "../../../common/error/common-http-exception";
+import type { DBType, PaginationInfo } from "../../../common/types/types";
+import { createCursor, parseCursor } from "../../../common/utils/cursor-utils";
+import { createPaginationResponse } from "../../../common/utils/response-utils";
+import type { UpdateConversationDto } from "../schemas/schemas";
 
-export const createConversation = async (userId: number, message: string) => {
+export const createConversation = async (
+  db: DBType,
+  userId: number,
+  message: string
+) => {
   const title = generateTitle(message);
 
   const [newConversation] = await db
@@ -16,12 +36,91 @@ export const createConversation = async (userId: number, message: string) => {
     throw new CommonHttpException(RESPONSE_STATUS.INTERNAL_SERVER_ERROR);
   }
 
-  return newConversation.id;
+  return { conversationId: newConversation.id };
+};
+
+export const findAllConversations = async (
+  db: DBType,
+  userId: number,
+  paginationInfo: PaginationInfo & {
+    includeFavorite?: boolean;
+    filter?: string;
+  }
+) => {
+  const decodedCursor = paginationInfo.cursor
+    ? parseCursor(paginationInfo.cursor, "date")
+    : null;
+
+  const whereCondition = and(
+    eq(conversations.userId, userId),
+    decodedCursor
+      ? paginationInfo.direction === "desc"
+        ? lte(conversations.updatedAt, decodedCursor)
+        : gte(conversations.updatedAt, decodedCursor)
+      : undefined,
+    !paginationInfo.includeFavorite
+      ? isNull(favoriteConversations.id)
+      : undefined,
+    paginationInfo.filter
+      ? ilike(conversations.title, `%${paginationInfo.filter}%`)
+      : undefined
+  );
+
+  const result = await db
+    .select({
+      id: conversations.id,
+      title: conversations.title,
+      createdAt: conversations.createdAt,
+      updatedAt: conversations.updatedAt,
+      favoriteId: favoriteConversations.id,
+    })
+    .from(conversations)
+    .leftJoin(
+      favoriteConversations,
+      eq(conversations.id, favoriteConversations.id)
+    )
+    .where(whereCondition)
+    .orderBy(
+      paginationInfo.direction === "desc"
+        ? desc(conversations.updatedAt)
+        : asc(conversations.updatedAt)
+    )
+    .limit(paginationInfo.limit + 1);
+
+  const [counts] = await db
+    .select({
+      count: count(),
+    })
+    .from(conversations)
+    .leftJoin(
+      favoriteConversations,
+      eq(conversations.id, favoriteConversations.conversationId)
+    )
+    .where(whereCondition);
+
+  const totalElements = counts ? counts.count : 0;
+
+  const nextValue =
+    result.length > paginationInfo.limit ? result.pop()?.updatedAt : null;
+
+  const nextCursor = nextValue ? createCursor(nextValue.toISOString()) : null;
+
+  const items = result.map(({ favoriteId, ...conversation }) => ({
+    ...conversation,
+    isFavorite: !!favoriteId,
+  }));
+
+  return createPaginationResponse(items, {
+    nextCursor,
+    totalElements,
+    hasNext: !!nextCursor,
+  });
 };
 
 export const updateConversationTitle = async (
+  db: DBType,
   conversationId: number,
-  title: string
+  { title }: UpdateConversationDto
 ) => {
   await db
     .update(conversations)
@@ -29,7 +128,14 @@ export const updateConversationTitle = async (
     .where(eq(conversations.id, conversationId));
 };
 
-export const findAllConversations = async () => {};
+export const deleteConversation = async (
+  db: DBType,
+  conversationId: number
+) => {
+  await db.delete(conversations).where(eq(conversations.id, conversationId));
+
+  return { conversationId };
+};
 
 const generateTitle = (message: string) => {
   return message.length > 20 ? `${message.substring(0, 20)}...` : message;

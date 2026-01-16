@@ -5,15 +5,24 @@ export interface Env {
   Bindings: {};
   Variables: {
     user: { id: number };
-    db: NodePgDatabase;
+    db: DBType;
   };
 }
+
+export type DBType = NodePgDatabase;
 
 export interface ResponseStatus {
   status: ContentfulStatusCode;
   code: string;
   message: string;
   description: string;
+}
+
+export interface PaginationInfo {
+  cursor?: string;
+  limit: number;
+  direction: "asc" | "desc";
+  filter?: string;
 }
 
 export interface PaginationOption {
