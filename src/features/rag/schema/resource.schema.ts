@@ -11,6 +11,13 @@ export const ResourceSchema = z.object({
   createdAt: z.coerce.date(),
 });
 
+export const ResourcePaginationQuerySchema = z.object({
+  cursor: z.string().optional(),
+  limit: z.coerce.number(),
+  direction: z.enum(["asc", "desc"]).optional(),
+  filter: z.string().optional(),
+});
+
 export const ResourcePaginaitonSchema = SuccessReponseSchema.extend({
   data: createPaginationSchema(ResourceSchema),
 });
@@ -25,3 +32,4 @@ export const UpdateResourceSchema = z.object({
 
 export type EmbeddingResouce = z.infer<typeof ResourceSchema>;
 export type ResourcePagination = z.infer<typeof ResourcePaginaitonSchema>;
+export type UpdateResourceDto = z.infer<typeof UpdateResourceSchema>;

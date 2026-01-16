@@ -7,6 +7,7 @@ import { setupDBMiddleware } from "./common/middlewares/setup-db.middleware";
 import type { Env } from "./common/types/types";
 import { zodValidationHook } from "./common/utils/zod-validation-hook";
 import conversationRoute from "./features/conversation/conversation.route";
+import ragRoute from "./features/rag/rag.route";
 
 const app = new OpenAPIHono<Env>({
   defaultHook: zodValidationHook,
@@ -30,5 +31,6 @@ app.get("/scalar", Scalar({ url: "/api/doc" }));
 app.use(sessionMiddleware);
 
 app.route("/conversations", conversationRoute);
+app.route("/rags", ragRoute);
 
 export default app;

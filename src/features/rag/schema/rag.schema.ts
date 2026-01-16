@@ -10,12 +10,6 @@ export const CreateEmbeddingSchema = z.object({
     .openapi({ example: "markdown" }),
 });
 
-export const PaginationQuerySchema = z.object({
-  cursor: z.string().optional(),
-  limit: z.coerce.number(),
-  direction: z.enum(["asc", "desc"]).optional(),
-});
-
 export const DocumentChunckSchema = z.object({
   id: z.uuid(),
   content: z.string(),

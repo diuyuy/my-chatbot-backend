@@ -18,7 +18,7 @@ export const validateResourceAccessability = async (
     throw new CommonHttpException(RESPONSE_STATUS.RESOURCE_NOT_FOUND);
   }
 
-  if (resource.id !== resourceId) {
+  if (resource.userId !== userId) {
     throw new CommonHttpException(RESPONSE_STATUS.ACCESS_RESOURCE_DENIED);
   }
 };

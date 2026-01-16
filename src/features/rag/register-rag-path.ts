@@ -4,8 +4,13 @@ import { RESPONSE_STATUS } from "../../common/constants/response-status";
 import { SuccessReponseSchema } from "../../common/schemas/common.schema";
 import type { Env } from "../../common/types/types";
 import { createErrorResponseSignature } from "../../common/utils/response-utils";
-import { DocumentChunckSchema } from "./schema/rag.schema";
 import {
+  CreateEmbeddingSchema,
+  DocumentChunckSchema,
+} from "./schema/rag.schema";
+import {
+  ResourcePaginaitonSchema,
+  ResourcePaginationQuerySchema,
   ResourceParamsSchema,
   ResourceSchema,
   UpdateResourceSchema,
@@ -15,6 +20,57 @@ export const registerRagPaths = (ragRoute: OpenAPIHono<Env>) => {
   ragRoute.openAPIRegistry.registerComponent("securitySchemes", "Bearer", {
     type: "http",
     scheme: "bearer",
+  });
+
+  ragRoute.openAPIRegistry.registerPath({
+    path: "/",
+    method: "post",
+    request: {
+      body: {
+        content: {
+          "application/json": {
+            schema: CreateEmbeddingSchema,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        content: {
+          "application/json": {
+            schema: SuccessReponseSchema.extend({
+              data: z.null(),
+            }),
+          },
+        },
+        description: "요청 성공 응답",
+      },
+    },
+  });
+
+  ragRoute.openAPIRegistry.registerPath({
+    path: "/resources",
+    method: "get",
+    request: {
+      query: ResourcePaginationQuerySchema,
+    },
+    responses: {
+      200: {
+        content: {
+          "application/json": {
+            schema: ResourcePaginaitonSchema,
+          },
+        },
+        description: "요청 성공 응답",
+      },
+      400: createErrorResponseSignature(RESPONSE_STATUS.INVALID_REQUEST_FORMAT),
+      500: createErrorResponseSignature(RESPONSE_STATUS.INTERNAL_SERVER_ERROR),
+    },
+    security: [
+      {
+        Bearer: [],
+      },
+    ],
   });
 
   ragRoute.openAPIRegistry.registerPath({
@@ -94,8 +150,17 @@ export const registerRagPaths = (ragRoute: OpenAPIHono<Env>) => {
             }),
           },
         },
-        description: "",
+        description: "요청 성공 응답",
       },
+      400: createErrorResponseSignature(RESPONSE_STATUS.INVALID_REQUEST_FORMAT),
+      403: createErrorResponseSignature(RESPONSE_STATUS.ACCESS_RESOURCE_DENIED),
+      404: createErrorResponseSignature(RESPONSE_STATUS.RESOURCE_NOT_FOUND),
+      500: createErrorResponseSignature(RESPONSE_STATUS.INTERNAL_SERVER_ERROR),
     },
+    security: [
+      {
+        Bearer: [],
+      },
+    ],
   });
 };

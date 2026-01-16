@@ -1,11 +1,15 @@
-import { and, asc, count, desc, eq, gte, lte } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, ilike, lte } from "drizzle-orm";
 import { RESPONSE_STATUS } from "../../../common/constants/response-status";
 import type { ResouceType } from "../../../common/db/schema/enums";
-import { documentResources } from "../../../common/db/schema/schema";
+import {
+  documentChunks,
+  documentResources,
+} from "../../../common/db/schema/schema";
 import { CommonHttpException } from "../../../common/error/common-http-exception";
 import type { DBType, PaginationInfo } from "../../../common/types/types";
 import { createCursor, parseCursor } from "../../../common/utils/cursor-utils";
 import { createPaginationResponse } from "../../../common/utils/response-utils";
+import type { UpdateResourceDto } from "../schema/resource.schema";
 
 export const createResource = async (
   db: DBType,
@@ -32,7 +36,7 @@ export const createResource = async (
 export const findResources = async (
   db: DBType,
   userId: number,
-  { cursor, limit, direction }: PaginationInfo
+  { cursor, limit, direction, filter }: PaginationInfo
 ) => {
   const decodedCursor = cursor ? parseCursor(cursor, "date") : null;
 
@@ -42,7 +46,8 @@ export const findResources = async (
       ? direction === "desc"
         ? lte(documentResources.createdAt, decodedCursor)
         : gte(documentResources.createdAt, decodedCursor)
-      : undefined
+      : undefined,
+    filter ? ilike(documentResources.name, `%${filter}%`) : undefined
   );
 
   const result = await db
@@ -81,4 +86,51 @@ export const findResources = async (
     totalElements,
     hasNext: !!nextCursor,
   });
+};
+
+export const findResourceById = async (db: DBType, resourceId: number) => {
+  const [resource] = await db
+    .select()
+    .from(documentResources)
+    .where(eq(documentResources.id, resourceId));
+
+  if (!resource) {
+    throw new CommonHttpException(RESPONSE_STATUS.RESOURCE_NOT_FOUND);
+  }
+
+  const chunks = await db
+    .select({
+      id: documentChunks.id,
+      content: documentChunks.content,
+      tag: documentChunks.tag,
+      createdAt: documentChunks.createdAt,
+    })
+    .from(documentChunks)
+    .where(eq(documentChunks.resourceId, resourceId));
+
+  return {
+    id: resource.id,
+    userId: resource.userId,
+    name: resource.name,
+    fileType: resource.fileType,
+    createdAt: resource.createdAt,
+    embedding: chunks,
+  };
+};
+
+export const updateResource = async (
+  db: DBType,
+  resourceId: number,
+  { name }: UpdateResourceDto
+) => {
+  await db
+    .update(documentResources)
+    .set({ name })
+    .where(eq(documentResources.id, resourceId));
+};
+
+export const deleteResource = async (db: DBType, resourceId: number) => {
+  await db
+    .delete(documentResources)
+    .where(eq(documentResources.id, resourceId));
 };

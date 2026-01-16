@@ -88,7 +88,12 @@ export const documentResources = pgTable(
     fileType: resourceTypeEnum("file_type").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
-  (table) => [index("idx_document_resources_name").on(table.name)]
+  (table) => [
+    index("idx_document_resources_name_trgm").using(
+      "gin",
+      table.name.op("gin_trgm_ops")
+    ),
+  ]
 );
 
 export const documentChunks = pgTable(

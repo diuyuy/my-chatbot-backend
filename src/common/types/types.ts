@@ -22,6 +22,7 @@ export interface PaginationInfo {
   cursor?: string;
   limit: number;
   direction: "asc" | "desc";
+  filter?: string;
 }
 
 export interface PaginationOption {
