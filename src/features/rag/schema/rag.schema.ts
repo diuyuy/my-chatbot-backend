@@ -18,7 +18,7 @@ export const DocumentChunckSchema = z.object({
 });
 
 export const ChunckParamsSchema = z.object({
-  chunkId: z.uuid(),
+  chunkId: z.coerce.number(),
 });
 
 export type CreateEmbeddingDto = z.infer<typeof CreateEmbeddingSchema>;

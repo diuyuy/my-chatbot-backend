@@ -13,10 +13,10 @@ export type MyMetadataPart = z.infer<typeof metadataSchema>;
 export type MyUIMessage = UIMessage<MyMetadataPart>;
 
 export interface GenerateMessageOption {
-  conversationId: string;
+  conversationId: number;
   messages: MyUIMessage[];
   modelProvider: string;
-  onFinish: (response: { messages: MyUIMessage[] }) => void;
+  onFinish: (response: { messages: MyUIMessage[] }) => Promise<void>;
   context?: string;
 }
 

@@ -5,7 +5,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RESPONSE_STATUS } from "../../../common/constants/response-status";
 import { CommonHttpException } from "../../../common/error/common-http-exception";
-import type { PaginationInfo } from "../../../common/types/types";
+import type { PaginationOption } from "../../../common/types/types";
 import {
   createResource,
   deleteResource,
@@ -48,7 +48,7 @@ describe("resource.service", () => {
         mockDB as any,
         userId,
         resourceName,
-        fileType
+        fileType,
       );
 
       expect(mockDB.insert).toHaveBeenCalled();
@@ -71,10 +71,10 @@ describe("resource.service", () => {
       } catch (error) {
         expect(error).toBeInstanceOf(CommonHttpException);
         expect((error as CommonHttpException).code).toBe(
-          RESPONSE_STATUS.INTERNAL_SERVER_ERROR.code
+          RESPONSE_STATUS.INTERNAL_SERVER_ERROR.code,
         );
         expect((error as CommonHttpException).status).toBe(
-          RESPONSE_STATUS.INTERNAL_SERVER_ERROR.status
+          RESPONSE_STATUS.INTERNAL_SERVER_ERROR.status,
         );
       }
     });
@@ -90,7 +90,7 @@ describe("resource.service", () => {
       } catch (error) {
         expect(error).toBeInstanceOf(CommonHttpException);
         expect((error as CommonHttpException).code).toBe(
-          RESPONSE_STATUS.INTERNAL_SERVER_ERROR.code
+          RESPONSE_STATUS.INTERNAL_SERVER_ERROR.code,
         );
       }
     });
@@ -98,7 +98,7 @@ describe("resource.service", () => {
 
   describe("findResources", () => {
     const userId = 1;
-    const basePaginationInfo: PaginationInfo = {
+    const basePaginationOption: PaginationOption = {
       limit: 10,
       direction: "desc",
     };
@@ -140,7 +140,7 @@ describe("resource.service", () => {
       const result = await findResources(
         mockDB as any,
         userId,
-        basePaginationInfo
+        basePaginationOption,
       );
 
       expect(mockDB.select).toHaveBeenCalledTimes(2);
@@ -161,14 +161,18 @@ describe("resource.service", () => {
           createdAt: new Date("2024-01-01"),
         },
       ];
-      const paginationInfo: PaginationInfo = {
+      const PaginationOption: PaginationOption = {
         limit: 2,
         direction: "desc",
       };
 
       setupMockSelect(resourcesWithExtra, 3);
 
-      const result = await findResources(mockDB as any, userId, paginationInfo);
+      const result = await findResources(
+        mockDB as any,
+        userId,
+        PaginationOption,
+      );
 
       expect(result.items).toHaveLength(2);
       expect(result.hasNext).toBe(true);
@@ -179,12 +183,16 @@ describe("resource.service", () => {
       const filteredResources = [mockResources[0]];
       setupMockSelect(filteredResources, 1);
 
-      const paginationInfo: PaginationInfo = {
-        ...basePaginationInfo,
+      const PaginationOption: PaginationOption = {
+        ...basePaginationOption,
         filter: "resource1",
       };
 
-      const result = await findResources(mockDB as any, userId, paginationInfo);
+      const result = await findResources(
+        mockDB as any,
+        userId,
+        PaginationOption,
+      );
 
       expect(result.items).toHaveLength(1);
       expect(result.totalElements).toBe(1);
@@ -194,12 +202,16 @@ describe("resource.service", () => {
       const ascResources = [...mockResources].reverse();
       setupMockSelect(ascResources, 2);
 
-      const paginationInfo: PaginationInfo = {
+      const PaginationOption: PaginationOption = {
         limit: 10,
         direction: "asc",
       };
 
-      const result = await findResources(mockDB as any, userId, paginationInfo);
+      const result = await findResources(
+        mockDB as any,
+        userId,
+        PaginationOption,
+      );
 
       expect(result.items).toHaveLength(2);
     });
@@ -208,12 +220,16 @@ describe("resource.service", () => {
       const cursor = Buffer.from("2024-01-02T00:00:00.000Z").toString("base64");
       setupMockSelect(mockResources, 2);
 
-      const paginationInfo: PaginationInfo = {
-        ...basePaginationInfo,
+      const PaginationOption: PaginationOption = {
+        ...basePaginationOption,
         cursor,
       };
 
-      const result = await findResources(mockDB as any, userId, paginationInfo);
+      const result = await findResources(
+        mockDB as any,
+        userId,
+        PaginationOption,
+      );
 
       expect(mockDB.select).toHaveBeenCalled();
       expect(result.items).toBeDefined();
@@ -223,13 +239,17 @@ describe("resource.service", () => {
       const cursor = Buffer.from("2024-01-02T00:00:00.000Z").toString("base64");
       setupMockSelect(mockResources, 2);
 
-      const paginationInfo: PaginationInfo = {
+      const PaginationOption: PaginationOption = {
         limit: 10,
         direction: "asc",
         cursor,
       };
 
-      const result = await findResources(mockDB as any, userId, paginationInfo);
+      const result = await findResources(
+        mockDB as any,
+        userId,
+        PaginationOption,
+      );
 
       expect(mockDB.select).toHaveBeenCalled();
       expect(result.items).toBeDefined();
@@ -241,7 +261,7 @@ describe("resource.service", () => {
       const result = await findResources(
         mockDB as any,
         userId,
-        basePaginationInfo
+        basePaginationOption,
       );
 
       expect(result.items).toHaveLength(0);
@@ -265,7 +285,7 @@ describe("resource.service", () => {
       const result = await findResources(
         mockDB as any,
         userId,
-        basePaginationInfo
+        basePaginationOption,
       );
 
       expect(result.totalElements).toBe(0);
@@ -277,7 +297,7 @@ describe("resource.service", () => {
       const result = await findResources(
         mockDB as any,
         userId,
-        basePaginationInfo
+        basePaginationOption,
       );
 
       result.items.forEach((item) => {
@@ -334,7 +354,7 @@ describe("resource.service", () => {
       expect(result.name).toBe(mockResource.name);
       expect(result.fileType).toBe(mockResource.fileType);
       expect(result.createdAt).toBe(mockResource.createdAt);
-      expect(result.embedding).toEqual(mockChunks);
+      expect(result.embeddings).toEqual(mockChunks);
     });
 
     it("should throw CommonHttpException with RESOURCE_NOT_FOUND when resource does not exist", async () => {
@@ -348,10 +368,10 @@ describe("resource.service", () => {
       } catch (error) {
         expect(error).toBeInstanceOf(CommonHttpException);
         expect((error as CommonHttpException).code).toBe(
-          RESPONSE_STATUS.RESOURCE_NOT_FOUND.code
+          RESPONSE_STATUS.RESOURCE_NOT_FOUND.code,
         );
         expect((error as CommonHttpException).status).toBe(
-          RESPONSE_STATUS.RESOURCE_NOT_FOUND.status
+          RESPONSE_STATUS.RESOURCE_NOT_FOUND.status,
         );
       }
     });
@@ -369,7 +389,7 @@ describe("resource.service", () => {
 
       const result = await findResourceById(mockDB as any, resourceId);
 
-      expect(result.embedding).toEqual([]);
+      expect(result.embeddings).toEqual([]);
     });
   });
 
@@ -397,7 +417,7 @@ describe("resource.service", () => {
       (mockDB.update as any).mockReturnValue({ set: mockSet });
 
       await expect(
-        updateResource(mockDB as any, resourceId, updateDto)
+        updateResource(mockDB as any, resourceId, updateDto),
       ).resolves.toBeUndefined();
     });
   });
@@ -420,7 +440,7 @@ describe("resource.service", () => {
       (mockDB.delete as any).mockReturnValue({ where: mockWhere });
 
       await expect(
-        deleteResource(mockDB as any, resourceId)
+        deleteResource(mockDB as any, resourceId),
       ).resolves.toBeUndefined();
     });
   });

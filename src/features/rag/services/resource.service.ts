@@ -6,7 +6,7 @@ import {
   documentResources,
 } from "../../../common/db/schema/schema";
 import { CommonHttpException } from "../../../common/error/common-http-exception";
-import type { DBType, PaginationInfo } from "../../../common/types/types";
+import type { DBType, PaginationOption } from "../../../common/types/types";
 import { createCursor, parseCursor } from "../../../common/utils/cursor-utils";
 import { createPaginationResponse } from "../../../common/utils/response-utils";
 import type { UpdateResourceDto } from "../schema/resource.schema";
@@ -15,7 +15,7 @@ export const createResource = async (
   db: DBType,
   userId: number,
   resourceName: string,
-  fileType: ResouceType
+  fileType: ResouceType,
 ) => {
   const [newResouce] = await db
     .insert(documentResources)
@@ -36,7 +36,7 @@ export const createResource = async (
 export const findResources = async (
   db: DBType,
   userId: number,
-  { cursor, limit, direction, filter }: PaginationInfo
+  { cursor, limit, direction, filter }: PaginationOption,
 ) => {
   const decodedCursor = cursor ? parseCursor(cursor, "date") : null;
 
@@ -47,7 +47,7 @@ export const findResources = async (
         ? lte(documentResources.createdAt, decodedCursor)
         : gte(documentResources.createdAt, decodedCursor)
       : undefined,
-    filter ? ilike(documentResources.name, `%${filter}%`) : undefined
+    filter ? ilike(documentResources.name, `%${filter}%`) : undefined,
   );
 
   const result = await db
@@ -57,7 +57,7 @@ export const findResources = async (
     .orderBy(
       direction === "desc"
         ? desc(documentResources.createdAt)
-        : asc(documentResources.createdAt)
+        : asc(documentResources.createdAt),
     )
     .limit(limit + 1);
 
@@ -114,14 +114,14 @@ export const findResourceById = async (db: DBType, resourceId: number) => {
     name: resource.name,
     fileType: resource.fileType,
     createdAt: resource.createdAt,
-    embedding: chunks,
+    embeddings: chunks,
   };
 };
 
 export const updateResource = async (
   db: DBType,
   resourceId: number,
-  { name }: UpdateResourceDto
+  { name }: UpdateResourceDto,
 ) => {
   await db
     .update(documentResources)

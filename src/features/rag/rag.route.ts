@@ -4,14 +4,16 @@ import { RESPONSE_STATUS } from "../../common/constants/response-status";
 import type { Env } from "../../common/types/types";
 import { createSuccessResponse } from "../../common/utils/response-utils";
 import { zodValidationHook } from "../../common/utils/zod-validation-hook";
+import { chunkGuard } from "./guards/chunk.guard";
 import { resourceGuard } from "./guards/resource.guard";
 import { registerRagPaths } from "./register-rag-path";
-import { CreateEmbeddingSchema } from "./schema/rag.schema";
+import { ChunckParamsSchema, CreateEmbeddingSchema } from "./schema/rag.schema";
 import {
   ResourcePaginationQuerySchema,
   ResourceParamsSchema,
   UpdateResourceSchema,
 } from "./schema/resource.schema";
+import { deleteChunkById } from "./services/chunk.service";
 import { createEmbedding } from "./services/rag.service";
 import {
   deleteResource,
@@ -36,9 +38,9 @@ ragRoute.post(
 
     return c.json(
       createSuccessResponse(RESPONSE_STATUS.EMBEDDING_CREATED, null),
-      201
+      201,
     );
-  }
+  },
 );
 
 ragRoute.get(
@@ -56,7 +58,7 @@ ragRoute.get(
     });
 
     return c.json(createSuccessResponse(RESPONSE_STATUS.OK, result), 200);
-  }
+  },
 );
 
 ragRoute.get(
@@ -70,7 +72,7 @@ ragRoute.get(
     const result = await findResourceById(db, resourceId);
 
     return c.json(createSuccessResponse(RESPONSE_STATUS.OK, result), 200);
-  }
+  },
 );
 
 ragRoute.patch(
@@ -86,7 +88,7 @@ ragRoute.patch(
     await updateResource(db, resourceId, updateResourceDto);
 
     return c.json(createSuccessResponse(RESPONSE_STATUS.OK, null), 200);
-  }
+  },
 );
 
 ragRoute.delete(
@@ -100,7 +102,21 @@ ragRoute.delete(
     await deleteResource(db, resourceId);
 
     return c.json(createSuccessResponse(RESPONSE_STATUS.OK, null), 200);
-  }
+  },
+);
+
+ragRoute.delete(
+  "/chunks/:chunkId",
+  zValidator("param", ChunckParamsSchema, zodValidationHook),
+  chunkGuard,
+  async (c) => {
+    const { chunkId } = c.req.valid("param");
+    const db = c.get("db");
+
+    await deleteChunkById(db, chunkId);
+
+    return c.json(createSuccessResponse(RESPONSE_STATUS.OK, null), 200);
+  },
 );
 
 export default ragRoute;

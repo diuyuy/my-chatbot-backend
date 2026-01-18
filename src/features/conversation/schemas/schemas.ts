@@ -27,5 +27,3 @@ export const ConversationPaginationQuerySchema = z.object({
   includeFavorite: z.coerce.boolean().optional(),
   filter: z.string().optional(),
 });
-
-export type UpdateConversationDto = z.infer<typeof UpdateConversationSchema>;

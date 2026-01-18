@@ -15,15 +15,15 @@ import {
   favoriteConversations,
 } from "../../../common/db/schema/schema";
 import { CommonHttpException } from "../../../common/error/common-http-exception";
-import type { DBType, PaginationInfo } from "../../../common/types/types";
+import type { DBType, PaginationOption } from "../../../common/types/types";
 import { createCursor, parseCursor } from "../../../common/utils/cursor-utils";
 import { createPaginationResponse } from "../../../common/utils/response-utils";
-import type { UpdateConversationDto } from "../schemas/schemas";
+import type { UpdateConversationDto } from "../types/types";
 
 export const createConversation = async (
   db: DBType,
   userId: number,
-  message: string
+  message: string,
 ) => {
   const title = generateTitle(message);
 
@@ -42,28 +42,28 @@ export const createConversation = async (
 export const findAllConversations = async (
   db: DBType,
   userId: number,
-  paginationInfo: PaginationInfo & {
+  paginationOption: PaginationOption & {
     includeFavorite?: boolean;
     filter?: string;
-  }
+  },
 ) => {
-  const decodedCursor = paginationInfo.cursor
-    ? parseCursor(paginationInfo.cursor, "date")
+  const decodedCursor = paginationOption.cursor
+    ? parseCursor(paginationOption.cursor, "date")
     : null;
 
   const whereCondition = and(
     eq(conversations.userId, userId),
     decodedCursor
-      ? paginationInfo.direction === "desc"
+      ? paginationOption.direction === "desc"
         ? lte(conversations.updatedAt, decodedCursor)
         : gte(conversations.updatedAt, decodedCursor)
       : undefined,
-    !paginationInfo.includeFavorite
+    !paginationOption.includeFavorite
       ? isNull(favoriteConversations.id)
       : undefined,
-    paginationInfo.filter
-      ? ilike(conversations.title, `%${paginationInfo.filter}%`)
-      : undefined
+    paginationOption.filter
+      ? ilike(conversations.title, `%${paginationOption.filter}%`)
+      : undefined,
   );
 
   const result = await db
@@ -77,15 +77,15 @@ export const findAllConversations = async (
     .from(conversations)
     .leftJoin(
       favoriteConversations,
-      eq(conversations.id, favoriteConversations.id)
+      eq(conversations.id, favoriteConversations.conversationId),
     )
     .where(whereCondition)
     .orderBy(
-      paginationInfo.direction === "desc"
+      paginationOption.direction === "desc"
         ? desc(conversations.updatedAt)
-        : asc(conversations.updatedAt)
+        : asc(conversations.updatedAt),
     )
-    .limit(paginationInfo.limit + 1);
+    .limit(paginationOption.limit + 1);
 
   const [counts] = await db
     .select({
@@ -94,14 +94,14 @@ export const findAllConversations = async (
     .from(conversations)
     .leftJoin(
       favoriteConversations,
-      eq(conversations.id, favoriteConversations.conversationId)
+      eq(conversations.id, favoriteConversations.conversationId),
     )
     .where(whereCondition);
 
   const totalElements = counts ? counts.count : 0;
 
   const nextValue =
-    result.length > paginationInfo.limit ? result.pop()?.updatedAt : null;
+    result.length > paginationOption.limit ? result.pop()?.updatedAt : null;
 
   const nextCursor = nextValue ? createCursor(nextValue.toISOString()) : null;
 
@@ -120,7 +120,7 @@ export const findAllConversations = async (
 export const updateConversationTitle = async (
   db: DBType,
   conversationId: number,
-  { title }: UpdateConversationDto
+  { title }: UpdateConversationDto,
 ) => {
   await db
     .update(conversations)
@@ -130,7 +130,7 @@ export const updateConversationTitle = async (
 
 export const deleteConversation = async (
   db: DBType,
-  conversationId: number
+  conversationId: number,
 ) => {
   await db.delete(conversations).where(eq(conversations.id, conversationId));
 

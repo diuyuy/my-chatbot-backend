@@ -18,14 +18,14 @@ export interface ResponseStatus {
   description: string;
 }
 
-export interface PaginationInfo {
+export interface PaginationOption {
   cursor?: string;
   limit: number;
   direction: "asc" | "desc";
   filter?: string;
 }
 
-export interface PaginationOption {
+export interface PaginationInfo {
   nextCursor: string | null;
   totalElements: number;
   hasNext: boolean;

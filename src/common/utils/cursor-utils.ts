@@ -1,12 +1,10 @@
-export const createCursor = (value: string) => {
-  if (!value) {
-    return null;
-  }
+export function createCursor(value: Date | string) {
+  const str = value instanceof Date ? value.toISOString() : value;
 
-  const cursor = Buffer.from(value, "utf-8").toString("base64");
+  const cursor = Buffer.from(str, "utf-8").toString("base64");
 
   return cursor;
-};
+}
 
 export function parseCursor(value: string, option: "date"): Date;
 export function parseCursor(value: string, option: "number"): number;

@@ -1,5 +1,6 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
+import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { globalExceptionHandler } from "./common/error/global-exception-handler";
 import { sessionMiddleware } from "./common/middlewares/session.middleware";
@@ -7,6 +8,7 @@ import { setupDBMiddleware } from "./common/middlewares/setup-db.middleware";
 import type { Env } from "./common/types/types";
 import { zodValidationHook } from "./common/utils/zod-validation-hook";
 import conversationRoute from "./features/conversation/conversation.route";
+import messageRoute from "./features/messages/message.route";
 import ragRoute from "./features/rag/rag.route";
 
 const app = new OpenAPIHono<Env>({
@@ -15,6 +17,13 @@ const app = new OpenAPIHono<Env>({
 
 app.onError(globalExceptionHandler);
 app.use(logger());
+app.use(
+  cors({
+    origin: [process.env.CORS_ORIGIN ?? "", process.env.PREVIEW_ORIGIN ?? ""],
+    credentials: true,
+    maxAge: 600,
+  }),
+);
 app.use(setupDBMiddleware);
 
 app.doc("/doc", {
@@ -31,6 +40,7 @@ app.get("/scalar", Scalar({ url: "/api/doc" }));
 app.use(sessionMiddleware);
 
 app.route("/conversations", conversationRoute);
+app.route("/messages", messageRoute);
 app.route("/rags", ragRoute);
 
 export default app;

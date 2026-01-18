@@ -1,5 +1,5 @@
 import { ErrorResponseSchema } from "../schemas/common.schema";
-import type { PaginationOption, ResponseStatus } from "../types/types";
+import type { PaginationInfo, ResponseStatus } from "../types/types";
 
 export const createSuccessResponse = <T>(
   { message }: ResponseStatus,
@@ -14,7 +14,7 @@ export const createSuccessResponse = <T>(
 
 export const createPaginationResponse = <T>(
   items: T[],
-  { nextCursor, totalElements, hasNext }: PaginationOption
+  { nextCursor, totalElements, hasNext }: PaginationInfo
 ) => {
   return {
     items,

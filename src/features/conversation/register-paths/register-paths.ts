@@ -1,17 +1,17 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "@hono/zod-openapi";
-import { RESPONSE_STATUS } from "../../common/constants/response-status";
-import { SuccessReponseSchema } from "../../common/schemas/common.schema";
-import type { Env } from "../../common/types/types";
-import { createErrorResponseSignature } from "../../common/utils/response-utils";
-import { createPaginationSchema } from "../../common/utils/schema-utils";
+import { RESPONSE_STATUS } from "../../../common/constants/response-status";
+import { SuccessReponseSchema } from "../../../common/schemas/common.schema";
+import type { Env } from "../../../common/types/types";
+import { createErrorResponseSignature } from "../../../common/utils/response-utils";
+import { createPaginationSchema } from "../../../common/utils/schema-utils";
 import {
   ConversationPaginationQuerySchema,
   ConversationParamSchema,
   ConversationSchema,
   CreateConversationSchema,
   UpdateConversationSchema,
-} from "./schemas/schemas";
+} from "../schemas/schemas";
 
 export const registerConversationPaths = (
   conversationRoute: OpenAPIHono<Env>
@@ -25,8 +25,25 @@ export const registerConversationPaths = (
     }
   );
 
+  //Handle Sent Message
   conversationRoute.openAPIRegistry.registerPath({
     path: "/",
+    method: "post",
+    responses: {
+      200: {
+        content: {
+          "text/event-stream": {
+            schema: z.string(),
+          },
+        },
+        description: "요청 성공 응답",
+      },
+    },
+  });
+
+  // Create New Conversation
+  conversationRoute.openAPIRegistry.registerPath({
+    path: "/new",
     method: "post",
     request: {
       body: {
@@ -60,6 +77,7 @@ export const registerConversationPaths = (
     ],
   });
 
+  // Get conversation by pagination
   conversationRoute.openAPIRegistry.registerPath({
     path: "/",
     method: "get",
@@ -87,6 +105,7 @@ export const registerConversationPaths = (
     ],
   });
 
+  // Update conversation title
   conversationRoute.openAPIRegistry.registerPath({
     path: "/:conversationId",
     method: "patch",
@@ -156,57 +175,5 @@ export const registerConversationPaths = (
         Bearer: [],
       },
     ],
-  });
-
-  // Favorite Conversation
-  conversationRoute.openAPIRegistry.registerPath({
-    path: "/:conversationId/favorites",
-    method: "post",
-    responses: {
-      201: {
-        content: {
-          "application/json": {
-            schema: SuccessReponseSchema.extend({
-              data: z.null(),
-            }),
-          },
-        },
-        description: "요청 성공 응답",
-      },
-    },
-  });
-
-  conversationRoute.openAPIRegistry.registerPath({
-    path: "/favorites",
-    method: "get",
-    responses: {
-      200: {
-        content: {
-          "application/json": {
-            schema: SuccessReponseSchema.extend({
-              data: z.array(ConversationSchema),
-            }),
-          },
-        },
-        description: "요청 성공 응답",
-      },
-    },
-  });
-
-  conversationRoute.openAPIRegistry.registerPath({
-    path: "/:conversationId/favorites",
-    method: "delete",
-    responses: {
-      200: {
-        content: {
-          "application/json": {
-            schema: SuccessReponseSchema.extend({
-              data: z.null(),
-            }),
-          },
-        },
-        description: "요청 성공 응답",
-      },
-    },
   });
 };
