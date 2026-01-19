@@ -107,12 +107,6 @@ export const loadPreviousMessages = async (
     .from(messages)
     .where(eq(messages.conversationId, conversationId));
 
-  const dd = result.map(({ metadata, ...rest }) => ({
-    ...rest,
-    metadata: metadata ?? undefined,
-  }));
-  console.log("🚀 ~ loadPreviousMessages ~ dd:", JSON.stringify(dd, null, 2));
-
   return result.map(({ metadata, ...rest }) => ({
     ...rest,
     metadata: metadata ?? undefined,

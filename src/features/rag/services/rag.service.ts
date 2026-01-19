@@ -10,26 +10,35 @@ import { createResource } from "./resource.service";
 export const createEmbedding = async (
   db: DBType,
   userId: number,
-  { resourceName, content, docsLanguage }: CreateEmbeddingDto
+  { resourceName, content, docsLanguage }: CreateEmbeddingDto,
 ) => {
   const filetype = resourceName
     ? (path.extname(resourceName).slice(1) as ResouceType)
     : "text";
 
-  const embeddings = await generateEmbeddings(content, docsLanguage);
+  let isMarkdown = false;
+
+  if (filetype === "md" || filetype === "markdown") {
+    isMarkdown = true;
+  }
+
+  const embeddings = await generateEmbeddings(
+    content,
+    docsLanguage ?? (isMarkdown ? "markdown" : "none"),
+  );
 
   await db.transaction(async (tx) => {
     const resourceId = await createResource(
       tx,
       userId,
       resourceName ?? content.substring(0, 25),
-      filetype
+      filetype,
     );
 
     await tx
       .insert(documentChunks)
       .values(
-        embeddings.map((embedding) => ({ ...embedding, resourceId, userId }))
+        embeddings.map((embedding) => ({ ...embedding, resourceId, userId })),
       );
   });
 };
@@ -37,13 +46,13 @@ export const createEmbedding = async (
 export const findRelevantContent = async (
   db: DBType,
   userId: number,
-  content: string
+  content: string,
 ) => {
   const userQueryEmbedded = await generateEmbedding(content);
 
   const similarity = sql<number>`${innerProduct(
     documentChunks.embedding,
-    userQueryEmbedded
+    userQueryEmbedded,
   )}`;
 
   const result = await db

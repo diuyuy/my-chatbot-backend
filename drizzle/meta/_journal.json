@@ -15,6 +15,13 @@
       "when": 1768464319039,
       "tag": "0001_illegal_doorman",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768828462226,
+      "tag": "0002_thick_scourge",
+      "breakpoints": true
     }
   ]
 }

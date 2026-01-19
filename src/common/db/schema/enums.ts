@@ -9,7 +9,13 @@ export const messageRoleEnum = pgEnum("message_role", [
 
 export const fileTypeEnum = pgEnum("file_type", ["image", "audio", "pdf"]);
 
-export const resourceTypeEnum = pgEnum("resource_type", ["text", "txt", "pdf"]);
+export const resourceTypeEnum = pgEnum("resource_type", [
+  "text",
+  "txt",
+  "pdf",
+  "md",
+  "markdown",
+]);
 
 export type MessageRole = (typeof messageRoleEnum.enumValues)[number];
 export type ResouceType = (typeof resourceTypeEnum.enumValues)[number];
