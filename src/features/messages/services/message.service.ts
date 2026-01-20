@@ -116,7 +116,8 @@ export const loadPreviousMessages = async (
 export const deleteMessageById = async (
   db: DBType,
   userId: number,
-  { conversationId, userMessageId, aiMessageId }: DeleteMessageDto,
+  conversationId: number,
+  { userMessageId, aiMessageId }: DeleteMessageDto,
 ) => {
   await validateMessageAccessability(db, userId, conversationId, userMessageId);
   await validateMessageAccessability(db, userId, conversationId, aiMessageId);

@@ -1,14 +1,4 @@
-import {
-  and,
-  asc,
-  count,
-  desc,
-  eq,
-  gte,
-  ilike,
-  isNull,
-  lte,
-} from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, ilike, isNull, lt } from "drizzle-orm";
 import { RESPONSE_STATUS } from "../../../common/constants/response-status";
 import {
   conversations,
@@ -53,11 +43,6 @@ export const findAllConversations = async (
 
   const whereCondition = and(
     eq(conversations.userId, userId),
-    decodedCursor
-      ? paginationOption.direction === "desc"
-        ? lte(conversations.updatedAt, decodedCursor)
-        : gte(conversations.updatedAt, decodedCursor)
-      : undefined,
     !paginationOption.includeFavorite
       ? isNull(favoriteConversations.id)
       : undefined,
@@ -79,7 +64,16 @@ export const findAllConversations = async (
       favoriteConversations,
       eq(conversations.id, favoriteConversations.conversationId),
     )
-    .where(whereCondition)
+    .where(
+      and(
+        whereCondition,
+        decodedCursor
+          ? paginationOption.direction === "desc"
+            ? lt(conversations.updatedAt, decodedCursor)
+            : gt(conversations.updatedAt, decodedCursor)
+          : undefined,
+      ),
+    )
     .orderBy(
       paginationOption.direction === "desc"
         ? desc(conversations.updatedAt)
@@ -100,10 +94,14 @@ export const findAllConversations = async (
 
   const totalElements = counts ? counts.count : 0;
 
-  const nextValue =
-    result.length > paginationOption.limit ? result.pop()?.updatedAt : null;
+  let lastValue: Date | undefined;
 
-  const nextCursor = nextValue ? createCursor(nextValue.toISOString()) : null;
+  if (result.length > paginationOption.limit) {
+    result.pop();
+    lastValue = result.at(-1)?.updatedAt;
+  }
+
+  const nextCursor = lastValue ? createCursor(lastValue) : null;
 
   const items = result.map(({ favoriteId, ...conversation }) => ({
     ...conversation,

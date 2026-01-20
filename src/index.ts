@@ -8,7 +8,6 @@ import { setupDBMiddleware } from "./common/middlewares/setup-db.middleware";
 import type { Env } from "./common/types/types";
 import { zodValidationHook } from "./common/utils/zod-validation-hook";
 import conversationRoute from "./features/conversation/conversation.route";
-import messageRoute from "./features/messages/message.route";
 import ragRoute from "./features/rag/rag.route";
 
 const app = new OpenAPIHono<Env>({
@@ -24,7 +23,6 @@ app.use(
     maxAge: 600,
   }),
 );
-app.use(setupDBMiddleware);
 
 app.doc("/doc", {
   openapi: "3.0.0",
@@ -36,11 +34,12 @@ app.doc("/doc", {
 
 app.get("/scalar", Scalar({ url: "/api/doc" }));
 
+app.use(setupDBMiddleware);
+
 // Protected Routes
 app.use(sessionMiddleware);
 
 app.route("/conversations", conversationRoute);
-app.route("/messages", messageRoute);
 app.route("/rags", ragRoute);
 
 export default app;

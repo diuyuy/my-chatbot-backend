@@ -16,7 +16,7 @@ export const generateAIResponse = async (
   db: DBType,
   userId: number,
   message: MyUIMessage,
-  { conversationId, modelProvider, isRag }: AIResponseOption
+  { conversationId, modelProvider, isRag }: AIResponseOption,
 ) => {
   let context: string | undefined;
 

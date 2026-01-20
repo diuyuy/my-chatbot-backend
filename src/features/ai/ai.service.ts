@@ -6,6 +6,7 @@ import {
   createIdGenerator,
   embed,
   embedMany,
+  generateText,
   InvalidToolInputError,
   NoSuchToolError,
   smoothStream,
@@ -104,7 +105,7 @@ const generateChunks = async (value: string, docsLanguage?: DocsLanguage) => {
 
 export const generateEmbeddings = async (
   value: string,
-  docsLanguage?: DocsLanguage
+  docsLanguage?: DocsLanguage,
 ) => {
   const chunks = await generateChunks(value, docsLanguage);
 
@@ -128,4 +129,13 @@ export const generateEmbedding = async (value: string) => {
   });
 
   return embedding;
+};
+
+export const translateToEnglish = async (query: string) => {
+  const { text } = await generateText({
+    model: google("gemini-2.0-flash"),
+    prompt: `If the following text is not in English, translate it to English. If it's already in English, return it as is: "${query}"`,
+  });
+
+  return text;
 };

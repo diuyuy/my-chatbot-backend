@@ -4,7 +4,7 @@ export default [
   ...baseConfig,
   {
     // TypeScript 파일들에만 이 설정을 적용합니다.
-    files: ["**/*.ts", "**/*.tsx"],
+    files: ["src/**/*.ts"],
 
     languageOptions: {
       parserOptions: {

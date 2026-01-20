@@ -38,14 +38,14 @@ export const findResources = async (
   userId: number,
   { cursor, limit, direction, filter }: PaginationOption,
 ) => {
-  const decodedCursor = cursor ? parseCursor(cursor, "date") : null;
+  const decodedCursor = cursor ? parseCursor(cursor, "number") : null;
 
   const whereCodition = and(
     eq(documentResources.userId, userId),
     decodedCursor
       ? direction === "desc"
-        ? lte(documentResources.createdAt, decodedCursor)
-        : gte(documentResources.createdAt, decodedCursor)
+        ? lte(documentResources.id, decodedCursor)
+        : gte(documentResources.id, decodedCursor)
       : undefined,
     filter ? ilike(documentResources.name, `%${filter}%`) : undefined,
   );
@@ -56,21 +56,27 @@ export const findResources = async (
     .where(whereCodition)
     .orderBy(
       direction === "desc"
-        ? desc(documentResources.createdAt)
-        : asc(documentResources.createdAt),
+        ? desc(documentResources.id)
+        : asc(documentResources.id),
     )
     .limit(limit + 1);
 
-  const nextValue = result.length > limit ? result.pop()?.createdAt : null;
+  const nextValue = result.length > limit ? result.pop()?.id : null;
+  console.log("🚀 ~ findResources ~ nextValue:", nextValue);
 
-  const nextCursor = nextValue ? createCursor(nextValue.toISOString()) : null;
+  const nextCursor = nextValue ? createCursor(String(nextValue)) : null;
 
   const [counts] = await db
     .select({
       count: count(),
     })
     .from(documentResources)
-    .where(whereCodition);
+    .where(
+      and(
+        eq(documentResources.userId, userId),
+        filter ? ilike(documentResources.name, `%${filter}%`) : undefined,
+      ),
+    );
 
   const totalElements = counts ? counts.count : 0;
 

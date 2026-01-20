@@ -169,9 +169,10 @@ conversationRoute.delete(
     const deleteMessageDto = c.req.valid("json");
 
     const { conversationId } = c.req.valid("param");
+    const user = c.get("user");
     const db = c.get("db");
 
-    await deleteMessageById(db, conversationId, deleteMessageDto);
+    await deleteMessageById(db, user.id, conversationId, deleteMessageDto);
 
     return c.json(createSuccessResponse(RESPONSE_STATUS.OK, null), 200);
   },
