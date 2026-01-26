@@ -273,7 +273,6 @@ describe("Conversation Integration Tests", () => {
       );
 
       const firstBody = (await firstRes.json()) as any;
-      console.log("🚀 ~ firstBody:", JSON.stringify(firstBody, null, 2));
       const cursor = firstBody.data.nextCursor;
 
       // Get second page

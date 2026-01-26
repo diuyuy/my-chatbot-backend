@@ -62,7 +62,6 @@ export const findResources = async (
     .limit(limit + 1);
 
   const nextValue = result.length > limit ? result.pop()?.id : null;
-  console.log("🚀 ~ findResources ~ nextValue:", nextValue);
 
   const nextCursor = nextValue ? createCursor(String(nextValue)) : null;
 

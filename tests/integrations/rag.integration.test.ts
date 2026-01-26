@@ -256,9 +256,7 @@ describe("RAG Integration Tests", () => {
       });
 
       const firstBody = (await firstRes.json()) as any;
-      console.log("🚀 ~ firstBody:", JSON.stringify(firstBody, null, 2));
       const cursor = firstBody.data.nextCursor;
-      console.log("🚀 ~ cursor:", cursor);
 
       // Get second page
       const secondRes = await app.request(
@@ -273,7 +271,6 @@ describe("RAG Integration Tests", () => {
       expect(secondRes.status).toBe(200);
 
       const secondBody = (await secondRes.json()) as any;
-      console.log("🚀 ~ secondBody:", JSON.stringify(secondBody, null, 2));
       expect(secondBody.data.items).toHaveLength(1);
       expect(secondBody.data.hasNext).toBe(false);
     });
