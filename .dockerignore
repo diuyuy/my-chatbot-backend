@@ -38,3 +38,4 @@ LICENSE
 README.md
 eslint.config.mjs
 \*.http
+**/*.test.ts
