@@ -7,6 +7,7 @@ import { sessionMiddleware } from "./common/middlewares/session.middleware";
 import { setupDBMiddleware } from "./common/middlewares/setup-db.middleware";
 import type { Env } from "./common/types/types";
 import { zodValidationHook } from "./common/utils/zod-validation-hook";
+import authRoute from "./features/auth/auth.route";
 import conversationRoute from "./features/conversation/conversation.route";
 import ragRoute from "./features/rag/rag.route";
 
@@ -20,7 +21,7 @@ app.use(
   cors({
     origin: [process.env.CORS_ORIGIN ?? "", process.env.PREVIEW_ORIGIN ?? ""],
     credentials: true,
-    maxAge: 600,
+    maxAge: 3600,
   }),
 );
 
@@ -35,6 +36,8 @@ app.doc("/doc", {
 app.get("/scalar", Scalar({ url: "/api/doc" }));
 
 app.use(setupDBMiddleware);
+
+app.route("/auth", authRoute);
 
 // Protected Routes
 app.use(sessionMiddleware);

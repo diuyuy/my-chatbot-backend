@@ -36,6 +36,13 @@ export const RESPONSE_STATUS = {
     description: "유효하지 않은 세션",
   },
 
+  INVALID_API_KEY: {
+    status: 401,
+    code: "INVALID_API_KEY",
+    message: "유효하지 않은 API 키입니다.",
+    description: "유효하지 않은 API KEY",
+  },
+
   // 403
   ACCESS_CONVERSATION_DENIED: {
     status: 403,
